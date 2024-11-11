@@ -1,126 +1,151 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 
 const MainPage = () => {
-  // State to store form input values
+
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
     confirmPassword: ''
-  });
+  })
 
-  // State to store validation errors
-  const [errors, setErrors] = useState({
+  const [error, setError] = useState({
     username: '',
     email: '',
     password: '',
     confirmPassword: ''
-  });
+  })
+  const navigate = useNavigate();
 
-  // Handle input change
-  const handleChange = (e) => {
+  const validateField = (name, value) => {
+    let message = '';
+
+    switch (name) {
+      case 'username':
+        if (!value) {
+          message = 'Username is required';
+        }
+
+        break;
+      case 'email':
+        if (!value) {
+          message = 'Email is required';
+        
+        } else if (!/\S+@\S+\.\S+/.test(value)) {
+          message = 'Email is invalid';
+        }
+        break;
+      case 'password':
+        if (!value) {
+          message = 'Password is required';
+        } else if (value.length < 6) {
+          message = 'Password should be at least 6 characters';
+        }
+        break;
+      case 'confirmPassword':
+        if (!value) {
+          message = 'Please confirm your password';
+        } else if (value !== formData.password) {
+          message = 'Passwords do not match';
+        }
+        break;
+      default:
+        break;
+    }
+
+    setError((prevError) => ({ ...prevError, [name]: message }));
+    return message === '';
+  };
+
+  const validateForm = () => {
+    const newError = {};
+
+   if (!formData.username) {
+    newError.username='username is required';
+   }
+
+   if(!formData.email) {
+    newError.email='email is required';
+   }
+
+   if(!formData.password){
+    newError.password='password is required';
+   }
+
+   if(!formData.confirmPassword){
+    newError.confirmPassword='confirm pass is required';
+   }
+
+   setError(newError);
+
+    return Object.keys(newError).length === 0
+  }
+
+  const handleOnSubmit = (e) => {
+    e.preventDefault();
+    if (validateForm()) {
+      navigate('/');
+    }
+  }
+
+  const handleOnchange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-  };
+    validateField(name, value);
+  }
 
-  // Validation function
-  const validateForm = () => {
-    const newErrors = {};
+  useEffect(() => {
+    console.log(formData, error, Object.keys(error).length==0);
+  }, [formData, error]);
 
-    // Username Validation
-    if (!formData.username) {
-      newErrors.username = 'Username is required';
-    }
+// console.log('SURR ', error)
+return (
+  <div className="registration-form">
+    <h2>Registration Form</h2>
+    <form onSubmit={handleOnSubmit}>
+      <label>UserName: </label>
+      <input 
+        type="text"
+        name="username"
+        onChange={handleOnchange}
+        value={formData.username}
+      />
+      {error.username && <p style={{color: 'red'}}>{error.username}</p>}
+      <label>Email: </label>
+      <input 
+        type="email"
+        name="email"
+        onChange={handleOnchange}
+        value={formData.email}
+      />
+      {error.email && <p style={{color: 'red'}}>{error.email}</p>}
 
-    // Email Validation
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
+      <label>Password: </label>
+      <input 
+        type="password"
+        name="password"
+        onChange={handleOnchange}
+        value={formData.password}
+      />
+      {error.password && <p style={{color: 'red'}}>{error.password}</p>}
 
-    // Password Validation
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
+      <label>Confirm - Password: </label>
+      <input 
+        type="password"
+        name="confirmPassword"
+        onChange={handleOnchange}
+        value={formData.confirmPassword}
+      />
+      {error.confirmPassword && <p style={{color: 'red'}}>{error.confirmPassword}</p>}
 
-    // Confirm Password Validation
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.confirmPassword !== formData.password) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
+      <button type="submit">Submit</button>
+    </form>
+    <Link to='/'>Back to Home</Link>
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  </div>  
 
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (validateForm()) {
-      console.log('Form submitted:', formData);
-      // You can handle the submission logic here
-    }
-  };
-
-  return (
-    <div className="registration-form">
-      <h2>Register</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Username:</label>
-          <input
-            type="text"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-          />
-          {errors.username && <p className="error">{errors.username}</p>}
-        </div>
-
-        <div>
-          <label>Email:</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-          />
-          {errors.email && <p className="error">{errors.email}</p>}
-        </div>
-
-        <div>
-          <label>Password:</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-          />
-          {errors.password && <p className="error">{errors.password}</p>}
-        </div>
-
-        <div>
-          <label>Confirm Password:</label>
-          <input
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-          />
-          {errors.confirmPassword && <p className="error">{errors.confirmPassword}</p>}
-        </div>
-
-        <div>
-          <button type="submit">Register</button>
-        </div>
-      </form>
-    </div>
-  );
-};
+)
+}
 
 export default MainPage;
